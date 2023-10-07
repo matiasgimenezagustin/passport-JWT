@@ -1,0 +1,95 @@
+<div>
+    <header>
+        <div id="credenciales"></div>
+        <a href="/">Cerrar sesion</a>
+    </header>
+    <div id="productos">
+   
+    </div>
+    <div id="pagination"></div>
+</div>
+
+<script > 
+    const addProductToCart = async (idProdToAdd) => {
+    try {
+        const response = await fetch('http://localhost:8080/api/cart/1/products/' + idProdToAdd + '?quantity=1', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json', 
+            },
+
+        });
+
+        if (!response.ok) {
+            throw new Error('Error al agregar el producto');
+        }
+        console.log('Producto agregado con éxito');
+        } catch (error) {
+                console.error('Error al agregar el producto:', error);
+            }
+        }
+
+
+    const listProductsHTML = document.getElementById('productos')
+    const paginationHTML = document.getElementById('pagination')
+    const renderProducts = (products) =>{
+        let resultHTML = ''
+        products.forEach(prod =>{
+            resultHTML += `
+                <div>
+                    <h2>${prod.title}</h2>
+                    <p>${prod.description}</p>
+                    <button id="btn-add-${prod._id}" class="btn-add">Agregar al carrito</button>
+                </div>
+            `
+            listProductsHTML.innerHTML = resultHTML
+        })
+        const btsAddCart = document.getElementsByClassName('btn-add')
+        for(const boton of btsAddCart){
+            boton.addEventListener('click',() =>{
+                const idProdToAdd = boton.id.split('-').pop()
+                console.log(idProdToAdd)
+
+                addProductToCart(idProdToAdd)
+            })
+        }
+    }
+    
+    const renderPagination = (response) =>{
+        let resultHTML = `
+        <div>
+            <a href='http:/products${response.prevLink}'>${response.hasPrevPage ? '< prev' : ''}</a>
+            <a href='http:/products${response.nextLink}'>${response.hasNextPage ? 'next >' : ''}></a>
+        </div>
+        `
+        paginationHTML.innerHTML = resultHTML
+    }
+    const callProducts = async () =>{
+        const url = new URL(window.location.href);
+        const urlPro = new URLSearchParams(url.search);
+        const page = urlPro.get('page')
+        console.log(page)
+        const response =  await fetch('http://localhost:8080/api/products?page=' + (page? page : 1),{method: "GET"}).then(res => res.json())
+        console.log(response)
+        renderProducts(response.payload)
+        renderPagination(response)
+    }
+    callProducts()
+
+
+    const url = new URL(window.location.href);
+    const urlPro = new URLSearchParams(url.search);
+    const rol = urlPro.get('rol')
+    const username = urlPro.get('username')
+    const email = urlPro.get('email')
+
+    const credencialesHTML = document.getElementById('credenciales')
+    console.log(credencialesHTML)
+    credencialesHTML.innerHTML = `
+        <div>
+            <h2>Rol: ${rol}</h2>
+            <h3>Username: ${username}</h3>
+            <h3>Email: ${email}</h3>
+        </div>
+    `
+</script>

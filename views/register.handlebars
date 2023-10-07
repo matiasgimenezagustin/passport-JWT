@@ -1,0 +1,56 @@
+<section>
+    <h1>Completa el siguiente registro</h1>
+    <form id="registerForm">
+        <div>
+            <label>Nombre de usuario:</label>
+            <input placeholder="pepe16" name="username"/>
+        </div>
+        <div>
+            <label>Mail:</label>
+            <input placeholder="pepe@gmail.com" name="email" type="email"/>
+        </div>
+        <div>
+            <label>Contraseña:</label>
+            <input placeholder="Mi_contraseña" name="password" type="password"/>
+        </div>
+        <div>
+            <label>Nombre:</label>
+            <input placeholder="Nombre" name="first_name"/>
+        </div>
+        <div>
+            <label>Apellido:</label>
+            <input placeholder="Apellido" name="last_name"/>
+        </div>
+        <div>
+            <label>Edad:</label>
+            <input placeholder="Edad" name="age" type="number"/>
+        </div>
+        <input type="submit" value="Registrarse"/>
+    </form>
+</section>
+
+<script>
+   const formularioRegistro = document.getElementById('registerForm')
+formularioRegistro.addEventListener('submit', (e) => {
+    e.preventDefault()
+    const user = {
+        username: formularioRegistro.username.value,
+        email: formularioRegistro.email.value,
+        password: formularioRegistro.password.value,
+        first_name: formularioRegistro.first_name.value,
+        last_name: formularioRegistro.last_name.value,
+        age: formularioRegistro.age.value,
+    }
+    fetch('http://localhost:8080/api/register',
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ user })
+        }
+    ).then(res => window.location.href = '/')
+})
+
+</script>
+

@@ -1,0 +1,51 @@
+
+<div id="messages">
+    {{messages}}
+    {{#each messages}}
+        <li>
+            USER: {{this.user}} | content: {{this.message}}
+        </li>
+    {{/each}}
+
+</div>
+<form id="newMessage">
+    <input type='text' placeholder="nombre de email" name="user">
+    <input type="text" placeholder="ingresa tu mensaje" name="message">
+    <input type="submit" value="Enviar mensaje">
+</form>
+<script >
+    const socket = new WebSocket('ws://localhost:8080');
+    const handleSubmitMenssage = () =>{
+
+    }
+
+    const newMessageForm = document.getElementById('newMessage');
+        newMessageForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const { user, message } = newMessageForm.elements;
+        socket.send(JSON.stringify({
+            event: 'newMessage',
+            user: user.value,
+            message: message.value
+    }));
+
+    message.value = ''
+});
+
+
+    const messagesHTML = document.getElementById('messages')
+    socket.onmessage = (event) => {
+
+        if(JSON.parse(event.data).event == 'upadateMessages'){
+            
+            const newMessages= JSON.parse(event.data).messages;
+            messagesHTML.innerHTML = ''; 
+            
+
+            newMessages.forEach((message) => {
+                messagesHTML.innerHTML += `<li>USER: ${message.user} | CONTENT: ${message.message}</li>`;
+            });
+        }
+        
+    };
+</script>

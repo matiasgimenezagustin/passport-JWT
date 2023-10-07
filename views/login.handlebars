@@ -1,0 +1,59 @@
+<section>
+    <h1>Inicia sesion</h1>
+    <form id="loginForm">
+        <div>
+            <label>Nombre de usuario:</label>
+            <input placeholder="pepe16" name="username"/>
+        </div>
+        <div>
+            <label>Mail:</label>
+            <input placeholder="pepe@gmail.com" name="email" type="email"/>
+        </div>
+        <div>
+            <label>Contraseña:</label>
+            <input placeholder="Mi_contraseña" name="password" type="text"/>
+        </div>
+        
+        <input type="submit" value="Iniciar sesión"/>
+        
+        <!-- Botón de inicio de sesión con GitHub -->
+        <a href="/auth/github/" class="github-login-button">
+            <img src="github-icon.png" alt="GitHub icon"/> Iniciar sesión con GitHub
+        </a>
+
+        <p>¿Aun no estas registrado? <a href="/register">Registrarse</a></p>
+        <span style="color:red" id="err"></span>
+    </form>
+</section>
+
+<script>
+    const formularioLogin = document.getElementById('loginForm')
+    const err = document.getElementById('err')
+    formularioLogin.addEventListener('submit', (e)=>{
+        e.preventDefault()
+        const user = {
+            username: formularioLogin.username.value, 
+            email: formularioLogin.email.value,
+            password: formularioLogin.password.value
+        }
+        console.log(user)
+        fetch('http://localhost:8080/api/login', 
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ user })
+            }
+        ).then(res => {
+            console.log(res)
+            if(res.ok){
+                window.location.href = res.url
+            }
+            else{
+                err.innerText='Cuenta inexistente'
+            }
+            
+        })
+    })
+</script>

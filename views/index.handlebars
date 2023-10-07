@@ -1,0 +1,69 @@
+
+<h1>Porducts List</h1>
+<form id="newProduct">
+    <div>
+        <label for="title">Title</label>
+        <input type="text" id="title" name="title">
+    </div>
+    <div>
+        <label for="price">Price</label>
+        <input type="number" id="price" name="price" value="0">
+    </div>
+ 
+    <div>
+        <label for="thumbnail">Thumbnail URL</label>
+        <input type="text" id="thumbnail" name="thumbnail">
+    </div>
+    <div>
+        <label for="description">Description</label>
+        <textarea id="description" name="description"></textarea>
+    </div>
+    <div>
+        <label for="code">Code</label>
+        <input type="text" id="code" name="code">
+    </div>
+    <div>
+        <label for="stock">Stock</label>
+        <input type="number" id="stock" name="stock" value="0">
+    </div>
+    <div>
+        <input type="submit" value="Submit">
+    </div>
+</form>
+<div id="contenedor"></div>
+<script>
+    const listaHTML = document.getElementById('contenedor');
+const socket = new WebSocket('ws://localhost:8080/realtimeProducts');
+
+socket.onmessage = (event) => {
+
+    const products = JSON.parse(event.data);
+    listaHTML.innerHTML = '';  // Limpiar la lista antes de añadir elementos nuevos
+    console.log(products)
+    products.content.forEach((product) => {
+        listaHTML.innerHTML += `<li>${product.title}</li>`;
+    });
+};
+
+const newProductForm = document.getElementById('newProduct');
+newProductForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const { title, price, thumbnail, description, code, stock } = newProductForm.elements;
+    socket.send(JSON.stringify({
+        title: title.value,
+        price: price.value,
+        thumbnail: thumbnail.value,
+        description: description.value,
+        code: code.value,
+        stock: stock.value
+    }));
+
+    // Limpiar los campos del formulario después de enviar
+    title.value = '';
+    price.value = 0;
+    thumbnail.value = '';
+    description.value = '';
+    code.value = '';
+    stock.value = 0
+});
+</script>
