@@ -3,14 +3,12 @@ const express = require('express');
 const { engine } = require('express-handlebars');
 const cors = require('cors');
 const { manager } = require('./dao/productsManagerMongo');
-const crypto = require('crypto');
-const passport = require('passport');
 const GitHubStrategy = require('passport-github').Strategy;
-const session = require('express-session');
 const WebSocket = require('ws');
 const { getAllMessages, saveMessage } = require('./dao/messagesManager');
-const User = require('./dao/models/userModel'); // Agregar el modelo de usuario
-const LocalStrategy = require('passport-local').Strategy;
+const pasaporte = require('./config/passport.config')
+const authRouter = require('./router/authRouter')
+const session = require('express-session');
 
 const app = express();
 const port = 8080;
@@ -36,6 +34,17 @@ db.once('open', () => {
     console.log('Connected to MongoDB Atlas');
 });
 
+app.use(
+    session({
+        secret: 'tu_secreto',
+        resave: false,
+        saveUninitialized: false,
+    })
+);
+
+app.use(pasaporte.initialize());
+app.use(pasaporte.session());
+
 app.use(cors(corsOptions));
 app.use(express.json());
 app.engine('handlebars', engine());
@@ -51,7 +60,13 @@ app.get('/chat', async (req, res) => {
 });
 
 app.get('/products', async (req, res) => {
-    res.render('products');
+    if(req.session.passport){
+        const user = await User.findById(req.session.passport.user)
+        res.render('products', {user: {first_name: user.first_name, last_name: user.last_name, role: user.role}});
+    }
+    else{
+        res.redirect('/')
+    }
 });
 
 app.get('/cart/:cid', async (req, res) => {
@@ -123,35 +138,24 @@ server.on('upgrade', (request, socket, head) => {
     });
 });
 
-// Configuración de la sesión
-app.use(session({
-    secret: 'tu_secreto_secreto', // Reemplaza esto con una clave secreta real
-    resave: false,
-    saveUninitialized: true
-}));
-
-// Inicialización de Passport
-app.use(passport.initialize());
-app.use(passport.session());
-
-app.use(session({
-    secret: crypto.randomBytes(32).toString('hex'),
-    resave: false,
-    saveUninitialized: true
-}));
 
 const productsRouter = require('./router/productRouter');
-app.use('/api/products', productsRouter);
-
+const registerRouter = require('./router/registerRouter');
 const cartRouter = require('./router/cartRouter');
 const { cartsManager } = require('./dao/cartsMangerMongo');
-app.use('/api/cart', cartRouter);
-
 const loginRouter = require('./router/loginRouter');
-app.use('/api/login', loginRouter);
 
-const registerRouter = require('./router/registerRouter');
+app.use('/api/products', productsRouter);
+app.use('/api/cart', cartRouter);
+app.use('/api/login', loginRouter);
+app.use('/auth', authRouter);
 app.use('/api/register', registerRouter);
+
+
+
+const passport = require('passport');
+const User = require('./dao/models/userModel');
+
 
 passport.use(new GitHubStrategy({
     clientID: 'd622b73918b3bcb79ebf',

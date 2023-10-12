@@ -3,6 +3,10 @@
         <div id="credenciales"></div>
         <a href="/">Cerrar sesion</a>
     </header>
+    {{#if user}}
+    <h2>{{user.first_name}} {{user.last_name}}</h2>
+    <h3>Role: {{user.role}}</h3>
+    {{/if}}
     <div id="productos">
    
     </div>
@@ -83,13 +87,6 @@
     const username = urlPro.get('username')
     const email = urlPro.get('email')
 
-    const credencialesHTML = document.getElementById('credenciales')
-    console.log(credencialesHTML)
-    credencialesHTML.innerHTML = `
-        <div>
-            <h2>Rol: ${rol}</h2>
-            <h3>Username: ${username}</h3>
-            <h3>Email: ${email}</h3>
-        </div>
-    `
+    
 </script>
+
