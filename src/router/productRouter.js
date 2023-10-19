@@ -13,7 +13,7 @@ router.get('/', async (req, res) => {
 
     try {
         const response = await manager.getProductsFromMongo(Number(limit), page ? page : 1);
-        
+        console.log(response)
         if (response.ok) {
             const { content, totalProducts } = response;
             

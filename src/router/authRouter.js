@@ -1,8 +1,11 @@
-const express = require('express');
-const router = express.Router();
-const authController = require('../controllers/authController');
+const passport = require('passport');
 
-router.post('/login', authController.login);
-router.get('/logout', authController.logout);
+exports.login = passport.authenticate('local', {
+    successRedirect: '/products',
+    failureRedirect: '/login',
+});
 
-module.exports = router;
+exports.logout = (req, res) => {
+    req.logout();
+    res.redirect('/');
+};

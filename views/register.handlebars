@@ -41,7 +41,7 @@ formularioRegistro.addEventListener('submit', (e) => {
         last_name: formularioRegistro.last_name.value,
         age: formularioRegistro.age.value,
     }
-    fetch('http://localhost:8080/api/register',
+    fetch('http://localhost:8080/session/register',
         {
             method: "POST",
             headers: {

@@ -3,11 +3,10 @@ const express = require('express');
 const { engine } = require('express-handlebars');
 const cors = require('cors');
 const { manager } = require('./dao/productsManagerMongo');
-const GitHubStrategy = require('passport-github').Strategy;
 const WebSocket = require('ws');
 const { getAllMessages, saveMessage } = require('./dao/messagesManager');
-const pasaporte = require('./config/passport.config')
-const authRouter = require('./router/authRouter')
+const pasaporte = require('./config/passport.config');
+const sessionRouter = require('./router/sessionRouter'); // Importa el nuevo sessionRouter
 const session = require('express-session');
 
 const app = express();
@@ -21,6 +20,7 @@ const corsOptions = {
 };
 
 const mongoose = require('mongoose');
+const User = require('./dao/models/userModel');
 
 mongoose.connect('mongodb+srv://miguel:U1v4YDx3uuAua6Zm@cluster1.jqz7ljy.mongodb.net/mensajes', {
     useNewUrlParser: true,
@@ -60,12 +60,11 @@ app.get('/chat', async (req, res) => {
 });
 
 app.get('/products', async (req, res) => {
-    if(req.session.passport){
-        const user = await User.findById(req.session.passport.user)
-        res.render('products', {user: {first_name: user.first_name, last_name: user.last_name, role: user.role}});
-    }
-    else{
-        res.redirect('/')
+    if (req.session.passport) {
+        const user = await User.findById(req.session.passport.user);
+        res.render('products', { user: { first_name: user.first_name, last_name: user.last_name, role: user.role } });
+    } else {
+        res.redirect('/');
     }
 });
 
@@ -81,9 +80,11 @@ app.get('/', (req, res) => {
     res.render('login');
 });
 
-app.get('/register', (req, res) => {
-    res.render('register');
-});
+app.get('/register', (req, res) =>{
+    res.render('register')
+})
+
+app.use('/session', sessionRouter); // Agrega el sessionRouter como ruta base
 
 const wss = new WebSocket.Server({ noServer: true });
 
@@ -132,51 +133,23 @@ wss.on('connection', async (websocket) => {
     });
 });
 
+const productsRouter = require('./router/productRouter');
+const cartRouter = require('./router/cartRouter');
+const { cartsManager } = require('./dao/cartsMangerMongo');
+
+
+
+app.use('/api/products', productsRouter);
+app.use('/api/cart', cartRouter);
+
+
+
+
 server.on('upgrade', (request, socket, head) => {
     wss.handleUpgrade(request, socket, head, (websocket) => {
         wss.emit('connection', websocket, request);
     });
 });
-
-
-const productsRouter = require('./router/productRouter');
-const registerRouter = require('./router/registerRouter');
-const cartRouter = require('./router/cartRouter');
-const { cartsManager } = require('./dao/cartsMangerMongo');
-const loginRouter = require('./router/loginRouter');
-
-app.use('/api/products', productsRouter);
-app.use('/api/cart', cartRouter);
-app.use('/api/login', loginRouter);
-app.use('/auth', authRouter);
-app.use('/api/register', registerRouter);
-
-
-
-const passport = require('passport');
-const User = require('./dao/models/userModel');
-
-
-passport.use(new GitHubStrategy({
-    clientID: 'd622b73918b3bcb79ebf',
-    clientSecret: 'd59813fa3f960a9f0f5486d1979aecdeb69203a4',
-    callbackURL: 'http://localhost:8080/auth/github/callback'
-},
-    (accessToken, refreshToken, profile, done) => {
-        return done(null, profile);
-    }
-));
-
-app.get('/auth/github',
-    passport.authenticate('github')
-);
-app.get('/auth/github/callback',
-    passport.authenticate('github', {
-        successRedirect: '/products',
-        failureRedirect: '/login',
-        failureFlash: true
-    })
-);
 
 server.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
