@@ -9,8 +9,12 @@ const pasaporte = require('./config/passport.config');
 const sessionRouter = require('./router/sessionRouter'); // Importa el nuevo sessionRouter
 const session = require('express-session');
 
+const dotenv = require('dotenv')
+dotenv.config({ path: './src/.env' })
+
 const app = express();
 const port = 8080;
+
 
 const server = http.createServer(app);
 
@@ -61,7 +65,7 @@ app.get('/chat', async (req, res) => {
 
 app.get('/products', async (req, res) => {
     if (req.session.passport) {
-        const user = await User.findById(req.session.passport.user);
+        const user = await getUser(req.session.passport.user);
         res.render('products', { user: { first_name: user.first_name, last_name: user.last_name, role: user.role } });
     } else {
         res.redirect('/');
@@ -136,6 +140,7 @@ wss.on('connection', async (websocket) => {
 const productsRouter = require('./router/productRouter');
 const cartRouter = require('./router/cartRouter');
 const { cartsManager } = require('./dao/cartsMangerMongo');
+const getUser = require('./dao/userManager');
 
 
 

@@ -17,6 +17,37 @@ class CartManager{
         return {ok: true, content:this.carts}
     }
 
+    async purchaseCartInMongo(cartId) {
+        // Obtener el carrito
+        const cart = await getCartFromMongo(cartId);
+
+        if (!cart) {
+            return { ok: false, message: 'El carrito no existe' };
+        }
+
+        // Recorrer los productos en el carrito
+        for (const product of cart.products) {
+          // Verificar si el producto tiene suficiente stock
+            const productInStock = await getProductFromMongo(product.productId);
+
+            if (!productInStock) {
+                return { ok: false, message: 'Producto no encontrado en el stock' };
+            }
+            if (productInStock.stock >= product.quantity) {
+                // Restar la cantidad comprada del stock del producto
+                await updateProductStockInMongo(product.productId, productInStock.stock - product.quantity);
+            } else {
+                // Si no hay suficiente stock, no agregar el producto al proceso de compra
+                return { ok: false, message: 'Stock insuficiente para un producto' };
+            }
+        }
+     
+        await deleteCartFromMongo(cartId);
+      
+        return { ok: true, message: 'Compra exitosa' };
+      }
+      
+    
     async getProductsById (cid){
 
         const productsFound = this.carts.find(cart => cart.id === cid)

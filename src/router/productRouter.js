@@ -4,18 +4,22 @@ const router = express.Router()
 
 
 
-const {manager} = require('../dao/productsManagerMongo')
+const {manager} = require('../dao/productsManagerMongo');
+const getUser = require('../dao/userManager');
 
 router.get('/', async (req, res) => {
 
     const { limit, page, sort } = req.query;
-    console.log(page)
+
 
     try {
         const response = await manager.getProductsFromMongo(Number(limit), page ? page : 1);
-        console.log(response)
+    
         if (response.ok) {
             const { content, totalProducts } = response;
+            
+
+            let user = await getUser(req.user)
             
             const totalPages = Math.ceil(totalProducts / 10);
             
@@ -31,8 +35,9 @@ router.get('/', async (req, res) => {
                 hasNextPage: currentPage < totalPages,
                 prevLink: currentPage !== 1 ? `?page=${currentPage - 1}` : null,
                 nextLink: currentPage < totalPages ? `?page=${currentPage + 1}` : null,
+                role: user.role
             };
-           
+            
             res.status(200).json(result);
         } else {
             res.status(400).json('Cannot get Products');
@@ -80,9 +85,11 @@ router.put('/:pid', async (req, res)=>{
 
 router.delete('/:pid', async (req, res) =>{
     const {pid} = req.params
+
+
     const response = await manager.deleteProductByIdFromMongo(pid)
     if(response.ok){
-        res.send(response)
+        res.json(response)
     }
     else{
         res.status(400).send(response.error)

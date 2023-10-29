@@ -14,7 +14,16 @@
 </div>
 
 <script > 
+
+    const deleteProduct = async (pid) =>{
+        const res = await fetch('http://localhost:8080/api/products/' + pid, {method: "delete"}).then((res) => res.json())
+        if(res.ok){
+            location.reload()
+        }
+        
+    }
     const addProductToCart = async (idProdToAdd) => {
+
     try {
         const response = await fetch('http://localhost:8080/api/cart/1/products/' + idProdToAdd + '?quantity=1', {
             method: 'POST',
@@ -36,27 +45,58 @@
 
     const listProductsHTML = document.getElementById('productos')
     const paginationHTML = document.getElementById('pagination')
-    const renderProducts = (products) =>{
+
+
+    const renderProducts = (products, role) =>{
         let resultHTML = ''
         products.forEach(prod =>{
-            resultHTML += `
+
+            if(role == 'user'){
+                resultHTML += `
                 <div>
                     <h2>${prod.title}</h2>
                     <p>${prod.description}</p>
+                    
                     <button id="btn-add-${prod._id}" class="btn-add">Agregar al carrito</button>
                 </div>
             `
+            }
+            else{
+                resultHTML += `
+                <div>
+                    <h2>${prod.title}</h2>
+                    <p>${prod.description}</p>
+                    
+                    <button id="btn-delete-${prod._id}" class="btn-delete">Eliminar</button>
+                </div>`
+            }
+            
             listProductsHTML.innerHTML = resultHTML
         })
-        const btsAddCart = document.getElementsByClassName('btn-add')
-        for(const boton of btsAddCart){
-            boton.addEventListener('click',() =>{
-                const idProdToAdd = boton.id.split('-').pop()
-                console.log(idProdToAdd)
+        if(role =='user'){
+             const btsAddCart = document.getElementsByClassName('btn-add')
+            for(const boton of btsAddCart){
+                boton.addEventListener('click',() =>{
+                    const idProdToAdd = boton.id.split('-').pop()
+                    console.log(idProdToAdd)
 
-                addProductToCart(idProdToAdd)
-            })
+                    addProductToCart(idProdToAdd)
+                })
+            }
         }
+        else{
+            const btnsDeleteProduct = document.getElementsByClassName('btn-delete')
+            for(const boton of btnsDeleteProduct){
+                boton.addEventListener('click',() =>{
+                    const idProdToAdd = boton.id.split('-').pop()
+
+                    deleteProduct(idProdToAdd)
+                })
+            }
+
+        }
+       
+        
     }
     
     const renderPagination = (response) =>{
@@ -68,6 +108,7 @@
         `
         paginationHTML.innerHTML = resultHTML
     }
+    let role 
     const callProducts = async () =>{
         const url = new URL(window.location.href);
         const urlPro = new URLSearchParams(url.search);
@@ -75,8 +116,9 @@
         console.log(page)
         const response =  await fetch('http://localhost:8080/api/products?page=' + (page? page : 1),{method: "GET"}).then(res => res.json())
         console.log(response)
-        renderProducts(response.payload)
+        renderProducts(response.payload, response.role)
         renderPagination(response)
+        console.log(response)
     }
     callProducts()
 
@@ -87,6 +129,7 @@
     const username = urlPro.get('username')
     const email = urlPro.get('email')
 
+    
     
 </script>
 

@@ -66,4 +66,16 @@ router.delete('/:cid', async (req, res) =>{
     }
 })
 
+
+router.post('/:cid/purchase', async (req, res) => {
+    const { cid } = req.params;
+    const response = await cartsManager.purchaseCartInMongo(Number(cid));
+  
+    if (response.ok) {
+      res.status(200).send(response);
+    } else {
+      res.status(400).send(response);
+    }
+  });
+
 module.exports = router

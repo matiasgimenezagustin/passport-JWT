@@ -13,7 +13,7 @@ const productSchema = new mongoose.Schema({
     code: {type: String, required: true},
     stock: {type: Number, required: true},
     thumbnail: {type: String, required: false},
-    id: {type: Number, required: false}
+    id: {type: String, required: false}
 })
 
 

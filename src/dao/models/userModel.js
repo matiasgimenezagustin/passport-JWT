@@ -35,3 +35,24 @@ userSchema.methods.validPassword = function (password) {
 const User = mongoose.model('User', userSchema);
 
 module.exports = User;
+
+
+async function generateAdmin() {
+  try {
+    const adminData = {
+      first_name: 'Admin',
+      last_name: 'User',
+      email: 'adm@gmail.com', 
+      age: 30, 
+      password: 'admin', 
+      role: 'admin', 
+    };
+
+    const admin = new User(adminData);
+    await admin.save();
+
+    console.log('Admin user created successfully.');
+  } catch (error) {
+    console.error('Error creating admin user:', error);
+  }
+}

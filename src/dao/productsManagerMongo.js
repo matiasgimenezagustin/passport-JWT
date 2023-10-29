@@ -80,12 +80,33 @@ class ProductManager {
             return { ok: false, error: 'Error getting product by ID' };
         }
     }
-
+    async updateProductStockInMongo(productId, newStock) {
+        try {
+            const product = await Product.findOneAndUpdate(
+                { _id: productId }, // Usar el campo adecuado para identificar el producto
+                { $set: { stock: newStock } }, // Actualizar el campo "stock"
+                { new: true }
+            );
+    
+            if (product) {
+                return { ok: true, updatedProduct: product };
+            } else {
+                return { ok: false, error: ProductManager.errors.notFound };
+            }
+        } catch (error) {
+            console.error('Error updating product stock by ID:', error);
+            return { ok: false, error: 'Error updating product stock by ID' };
+        }
+    }
+    
 
     async deleteProductByIdFromMongo(id) {
+        console.log(id)
         try {
-            await Product.findOneAndDelete({ id: Number(id) });
+            let res = await Product.findOneAndDelete({ _id: id});
+            console.log(res)
             const productFound = await this.getProductByIdFromMongo(id)
+            console.log(productFound)
             return productFound.ok ? {ok: false, error: 'Error deleting product by ID' } : {ok: true, content: 'The product was deleted'}
         } catch (error) {
             console.error('Error deleting product by ID:', error);

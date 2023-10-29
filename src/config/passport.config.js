@@ -3,14 +3,18 @@ const LocalStrategy = require('passport-local').Strategy;
 const GitHubStrategy = require('passport-github').Strategy;
 const User = require('../dao/models/userModel');
 
+const dotenv = require('dotenv')
+dotenv.config({ path: './src/.env' })
+
 // Inicialización de Passport y configuración de las estrategias
-function initializePassport() {
+ function  initializePassport () {
   // Estrategia local para inicio de sesión
   passport.use('local', new LocalStrategy({
     usernameField: 'email',
     passwordField: 'password',
-  }, (email, password, done) => {
-    console.log(email, password)
+
+  },  (email, password, done) => {
+
     User.findOne({ email })
       .exec()
       .then((user) => {
@@ -39,17 +43,24 @@ function initializePassport() {
 
   // Serialización y deserialización de usuarios
   passport.serializeUser((user, done) => {
+
     done(null, user.id);
   });
 
   passport.deserializeUser((id, done) => {
-    User.findById(id)
-      .then((user) => {
-        done(null, user);
-      })
-      .catch((err) => {
-        done(err, null);
-      });
+
+    if (admin.id == id) {
+
+      done(null, admin);
+    } else {
+      User.findById(id)
+        .then((user) => {
+          done(null, user);
+        })
+        .catch((err) => {
+          done(err, null);
+        });
+    }
   });
 }
 

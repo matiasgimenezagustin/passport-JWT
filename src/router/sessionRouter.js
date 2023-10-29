@@ -3,8 +3,11 @@ const router = express.Router();
 const passport = require('../config/passport.config');
 const User = require('../dao/models/userModel');
 
+
+
 // Ruta para el inicio de sesión (login)
 router.post('/login', (req, res, next) => {
+
     passport.authenticate('local', (err, user, info) => {
         console.log(user)
         if (err) {
